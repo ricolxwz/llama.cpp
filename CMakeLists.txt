@@ -11,7 +11,7 @@ set(LLAMA_VERSION_BASE "${LLAMA_VERSION_MAJOR}.${LLAMA_VERSION_MINOR}.${LLAMA_VE
 # whether this is a development/nightly build
 # set this to OFF when making a release from a release tag (vX.Y.Z)
 # ref: https://github.com/ggml-org/ggml/discussions/1579
-option(LLAMA_BUILD_IS_DEV "llama: dev build" ON)
+option(LLAMA_BUILD_IS_DEV "llama: dev build" ON)  # 缓存变量, 可以通过-DLLAMA_BUILD_IS_DEV覆盖掉; 如果是set设置的普通变量, 那么无法通过-D覆盖. 
 
 if (LLAMA_BUILD_IS_DEV)
     set(LLAMA_VERSION "${LLAMA_VERSION_BASE}-dev")
