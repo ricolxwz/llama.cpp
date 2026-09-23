@@ -52,14 +52,14 @@ option(LLAMA_USE_SYSTEM_GGML "Use system libggml" OFF)  # 默认情况下, llama
 
 option(LLAMA_WASM_MEM64 "llama: use 64-bit memory in WASM builds" ON)  # 如果你是在编译WebAssembly版本的llama, 默认启用64位内存模式
 
-if (EMSCRIPTEN)
+if (EMSCRIPTEN)  # 因为WebAssembly环境下传统意义上的.so/.dll动态库支持和原生平台不一样, 所以通常默认使用静态链接. EMSCRIPTEN表示当前是不是使用Emscripten工具链编译WebAssembly. 
     set(BUILD_SHARED_LIBS_DEFAULT OFF)
 
     # Use 64-bit memory to support backend_get_memory queries
     # TODO: analyze performance impact, see https://spidermonkey.dev/blog/2025/01/15/is-memory64-actually-worth-using
     if (LLAMA_WASM_MEM64)
-      add_compile_options("-sMEMORY64=1")
-      add_link_options("-sMEMORY64=1")
+      add_compile_options("-sMEMORY64=1")  # 目录级别的编译参数
+      add_link_options("-sMEMORY64=1")  # 目录级别的链接参数
     endif()
     add_link_options("-sALLOW_MEMORY_GROWTH=1")
 
@@ -89,13 +89,13 @@ if (MSVC)
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/bigobj>")
 endif()
 
-if (LLAMA_STANDALONE)
+if (LLAMA_STANDALONE)  # 主要是visiual studio中要用到
     # enable parallel builds for msbuild
     list(APPEND CMAKE_VS_GLOBALS UseMultiToolTask=true)
     list(APPEND CMAKE_VS_GLOBALS EnforceProcessCountAcrossBuilds=true)
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+if (CMAKE_SYSTEM_NAME STREQUAL "iOS")  # ios上面不需要这些命令行工具程序, 当前tools/CMakeLists.txt里面会加入很多的工具, 比如说llama-bench, llama-quantize, llama-perplexity, llama-tokenize, gguf-split等等, 在执行cmake --install的时候, 会把这些工具安装到目录中. 
     set(LLAMA_TOOLS_INSTALL_DEFAULT OFF)
 else()
     set(LLAMA_TOOLS_INSTALL_DEFAULT ${LLAMA_STANDALONE})
