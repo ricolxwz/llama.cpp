@@ -28,14 +28,14 @@ set(CMAKE_WARN_UNUSED_CLI YES)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT XCODE AND NOT MSVC AND NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)  # option只适合表达布尔类型的缓存变量, 如果是字符串类型的话, 最好使用set(... CACHE ...)的方式, 不过这里加了FORCE, 表示会被强制覆盖为Release
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")  # 表示要修改缓存变量CACHE. 后面是候选值列表, 主要作用是让cmake-gui, ccmake等gui显示为下拉框
 endif()
 
 message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 # Add path to modules
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")  # 判断当前这个Cmake项目是被"单独构建", 还是作为别的项目的子项目被引入. 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -48,9 +48,9 @@ else()
     set(LLAMA_STANDALONE OFF)
 endif()
 
-option(LLAMA_USE_SYSTEM_GGML "Use system libggml" OFF)
+option(LLAMA_USE_SYSTEM_GGML "Use system libggml" OFF)  # 默认情况下, llama不会去用系统里面已经安装好的ggml, 而是使用项目自己带的那份
 
-option(LLAMA_WASM_MEM64 "llama: use 64-bit memory in WASM builds" ON)
+option(LLAMA_WASM_MEM64 "llama: use 64-bit memory in WASM builds" ON)  # 如果你是在编译WebAssembly版本的llama, 默认启用64位内存模式
 
 if (EMSCRIPTEN)
     set(BUILD_SHARED_LIBS_DEFAULT OFF)
