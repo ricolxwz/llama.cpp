@@ -113,32 +113,40 @@ endif()
 # option list
 #
 
+# 编译参数类, 全部都汇聚到cmake/common.cmake的llama_add_compile_flags(), 他会被7个子目录各调用一次: src/CMakeLists.txt:1, common/CMakeLists.txt:3, ...., 函数内部使用的是add_compile_options, flag只作用于调用他的那个目录的作用域
+
 # debug
 option(LLAMA_ALL_WARNINGS           "llama: enable all compiler warnings"                   ON)
 option(LLAMA_ALL_WARNINGS_3RD_PARTY "llama: enable all compiler warnings in 3rd party libs" OFF)
-
 # build
 option(LLAMA_FATAL_WARNINGS "llama: enable -Werror flag" OFF)
-
 # sanitizers
 option(LLAMA_SANITIZE_THREAD    "llama: enable thread sanitizer"    OFF)
 option(LLAMA_SANITIZE_ADDRESS   "llama: enable address sanitizer"   OFF)
 option(LLAMA_SANITIZE_UNDEFINED "llama: enable undefined sanitizer" OFF)
 
+# 子目录开关类, 详情见下面的if块; 大多数都是${LLAMA_STANDALONE}, 单独构建的时候全部打开, 被别的项目当做子项目引入的时候, 只编译llama库. 
+ 
 # utils
 option(LLAMA_BUILD_COMMON "llama: build common utils library" ${LLAMA_STANDALONE})
-
 # extra artifacts
 option(LLAMA_BUILD_TESTS     "llama: build tests"                                                                ${LLAMA_STANDALONE})
 option(LLAMA_BUILD_TOOLS     "llama: build tools"                                                                ${LLAMA_STANDALONE})
 option(LLAMA_BUILD_EXAMPLES  "llama: build examples"                                                             ${LLAMA_STANDALONE})
 option(LLAMA_BUILD_SERVER    "llama: build server example"                                                       ${LLAMA_STANDALONE})
 option(LLAMA_BUILD_APP       "llama: build the unified binary"                                                   ${LLAMA_STANDALONE})
-option(LLAMA_BUILD_UI        "llama: build the embedded Web UI for server"                                       OFF)
-option(LLAMA_USE_PREBUILT_UI "llama: use prebuilt UI from HF Bucket when available" ON)
+
+# UI开关: 是否编译自带的web ui, 是否从hugging face上下载已经预编译好的ui
+ 
+option(LLAMA_BUILD_UI        "llama: build the embedded Web UI for server"                                       ON)
+option(LLAMA_USE_PREBUILT_UI "llama: use prebuilt UI from HF Bucket when available (requires LLAMA_BUILD_UI=ON)" ON)
+
+# install开关, 比如控制cmake --install是否安装命令行工具; 是否安装测试可执行文件
 
 option(LLAMA_TOOLS_INSTALL "llama: install tools" ${LLAMA_TOOLS_INSTALL_DEFAULT})
 option(LLAMA_TESTS_INSTALL "llama: install tests" ON)
+
+# 第三方库开关
 
 # 3rd party libs
 option(LLAMA_OPENSSL    "llama: use openssl to support HTTPS" ON)
