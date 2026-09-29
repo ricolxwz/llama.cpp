@@ -222,14 +222,14 @@ add_compile_options(
 
 if (LLAMA_USE_SYSTEM_GGML)
     message(STATUS "Using system-provided libggml, skipping ggml build")
-    find_package(ggml REQUIRED)
-    add_library(ggml ALIAS ggml::ggml)
+    find_package(ggml REQUIRED)  # 查找系统ggml包, 要求他提供ggml::ggml target
+    add_library(ggml ALIAS ggml::ggml)  # 为该target提供ggml别名
 endif()
 
 if (NOT TARGET ggml AND NOT LLAMA_USE_SYSTEM_GGML)
     set(GGML_BUILD_NUMBER ${LLAMA_BUILD_NUMBER})
     set(GGML_BUILD_COMMIT ${LLAMA_BUILD_COMMIT})
-    add_subdirectory(ggml)
+    add_subdirectory(ggml)  # 如果不是用系统提供的ggml包, 那么自己从源码构建
     # ... otherwise assume ggml is added by a parent CMakeLists.txt
 endif()
 
@@ -237,13 +237,13 @@ endif()
 # build the library
 #
 
-add_subdirectory(src)
+add_subdirectory(src)  # 构建llama主库
 
 #
 # utils, programs, examples and tests
 #
 
-add_subdirectory(vendor)
+add_subdirectory(vendor)  # 构建项目依赖的第三方代码
 
 if (LLAMA_BUILD_COMMON)
     add_subdirectory(common)
@@ -281,8 +281,8 @@ endif()
 # install
 #
 
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)  # 提供一组标准安装目录变量
+include(CMakePackageConfigHelpers)  # 提供生成cmake包配置文件的辅助命令configure_package_config_file, write_basic_package_version_file等等, 方便安装后其他的项目通过find_package()导入llama目标
 
 set(LLAMA_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Location of header  files")
 set(LLAMA_LIB_INSTALL_DIR     ${CMAKE_INSTALL_LIBDIR}     CACHE PATH "Location of library files")
@@ -294,7 +294,7 @@ set(LLAMA_PUBLIC_HEADERS
 
 set_target_properties(llama
     PROPERTIES
-        PUBLIC_HEADER "${LLAMA_PUBLIC_HEADERS}")
+        PUBLIC_HEADER "${LLAMA_PUBLIC_HEADERS}")  # 给已经存在的构建目标设置属性
 
 install(TARGETS llama LIBRARY PUBLIC_HEADER)
 
