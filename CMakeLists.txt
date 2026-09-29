@@ -178,6 +178,7 @@ if (NOT DEFINED GGML_CUDA_GRAPHS)
     set(GGML_CUDA_GRAPHS_DEFAULT ON)
 endif()
 
+# 兼容旧选项名的过渡小工具, llama.cpp早期有一批LLAMA_*开头的选项, 后来这些能力被下沉到ggml子项目, 所以选项名字有修改. 
 # transition helpers
 function (llama_option_depr TYPE OLD)
     if (${OLD})
@@ -191,7 +192,7 @@ function (llama_option_depr TYPE OLD)
     endif()
 endfunction()
 
-llama_option_depr(FATAL_ERROR LLAMA_CUBLAS              GGML_CUDA)
+llama_option_depr(FATAL_ERROR LLAMA_CUBLAS              GGML_CUDA)  # 如果写了-DLLAMA_CUBLAS=ON, 函数就打印FATAL_ERROR级别的提示, 并顺手把GGML_CUDA设置为on. 
 llama_option_depr(WARNING     LLAMA_CUDA                GGML_CUDA)
 llama_option_depr(WARNING     LLAMA_METAL               GGML_METAL)
 llama_option_depr(WARNING     LLAMA_METAL_EMBED_LIBRARY GGML_METAL_EMBED_LIBRARY)
