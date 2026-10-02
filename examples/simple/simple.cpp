@@ -12,16 +12,16 @@ static void print_usage(int, char ** argv) {
 }
 
 int main(int argc, char ** argv) {
-    std::setlocale(LC_NUMERIC, "C");
+    std::setlocale(LC_NUMERIC, "C");  // setlocale是设置程序的区域设置, 影响日期, 货币, 数字等格式. LC_NUMERIC是区域设置里面的一个类别, 只控制数字的解析与打印, 核心是小数点用什么字符. "C"是经典默认区域, 小数点固定为., 没有本地化格式. 如果用户系统locale是德语/法语/俄语等, 小数点模式是逗号,. 这时程序会出现两种坏情况: * 解析strtod("0.8")的时候, 会把0.8读成0(因为在.处截断); * 打印printf("%f", 0.5)输出0,500000. 
 
     // path to the model gguf file
     std::string model_path;
     // prompt to generate text from
     std::string prompt = "Hello my name is";
     // number of layers to offload to the GPU
-    int ngl = 99;
+    int ngl = 99;  // 把模型的多少层放到GPU上计算. 设为0就是纯GPU推理
     // number of tokens to predict
-    int n_predict = 32;
+    int n_predict = 32;  // 生成token的数量
 
     // parse command line arguments
 
