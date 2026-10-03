@@ -584,15 +584,15 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
 #endif
 
     // 在同一种backend的多个动态库版本里面, 选出最合适当前机器的那个并加载; silent表示是否静默加载; 它要去磁盘上找动态库, 所以需要一个目录告诉它"去哪里找", 比如说windows下面可能有C:\llama\backends\ggml-cpu.dll; ggml-cuda.dll; ggml-vulkan.dll, 函数会在这个目录里面搜索对应的backends. 注意, 这里是CUDA内部选score最高的版本->加载; CPU内部选score最高的版本->加载...
-    ggml_backend_load_best("blas", silent, dir_path);
-    ggml_backend_load_best("zendnn", silent, dir_path);
-    ggml_backend_load_best("cann", silent, dir_path);
+    ggml_backend_load_best("blas", silent, dir_path);  // 主要给CPU用, 通用矩阵运算库接口
+    ggml_backend_load_best("zendnn", silent, dir_path);  // 主要给AMD CPU用, AMD专门针对Zen系列CPU做的深度学习优化库
+    ggml_backend_load_best("cann", silent, dir_path);  // 主要给华为昇腾GPU用
     ggml_backend_load_best("cuda", silent, dir_path);
-    ggml_backend_load_best("hip", silent, dir_path);
+    ggml_backend_load_best("hip", silent, dir_path);  // 主要给AMD GPU用, AMD版的CUDA体系, 主要跑Radeon/Instinct
     ggml_backend_load_best("metal", silent, dir_path);
-    ggml_backend_load_best("rpc", silent, dir_path);
-    ggml_backend_load_best("sycl", silent, dir_path);
-    ggml_backend_load_best("vulkan", silent, dir_path);
+    ggml_backend_load_best("rpc", silent, dir_path);  // 把计算通过网络扔给另一台机器执行
+    ggml_backend_load_best("sycl", silent, dir_path);  // 主要给Intel GPU用
+    ggml_backend_load_best("vulkan", silent, dir_path);  // 给各类GPU用, 通用GPU图形/计算API, NVIDIA/AMD/Intel都可能支持
     ggml_backend_load_best("virtgpu", silent, dir_path);
     ggml_backend_load_best("opencl", silent, dir_path);
     ggml_backend_load_best("hexagon", silent, dir_path);
