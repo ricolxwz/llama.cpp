@@ -519,32 +519,32 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
             continue;
         }
         std::error_code dir_ec;
-        fs::directory_iterator dir_it(search_path, fs::directory_options::skip_permission_denied, dir_ec);
+        fs::directory_iterator dir_it(search_path, fs::directory_options::skip_permission_denied, dir_ec);  // 使用()初始化
         if (dir_ec) {
             GGML_LOG_DEBUG("%s: failed to enumerate %s: %s\n", __func__, path_str(search_path).c_str(), dir_ec.message().c_str());
             continue;
         }
-        for (const fs::directory_iterator end; dir_it != end; dir_it.increment(dir_ec)) {
-            const auto & entry = *dir_it;
-            if (entry.is_regular_file(ec)) {
-                auto filename = entry.path().filename();
-                auto ext = entry.path().extension();
-                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {
-                    dl_handle_ptr handle { dl_load_library(entry) };
+        for (const fs::directory_iterator end; dir_it != end; dir_it.increment(dir_ec)) {  // 让dir_it移动到下一个目录项, 如果出错就写入dir_ec. 
+            const auto & entry = *dir_it;  // 从目录迭代器中读出当前文件条目
+            if (entry.is_regular_file(ec)) {  // 判断是否为普通文件
+                auto filename = entry.path().filename();  // 文件名
+                auto ext = entry.path().extension();  // 扩展名
+                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {  // 文件名以file_prefix开头, 例如libggml-cuda-; 扩展名等于file_extension, 例如.so或者.dll只有满足这两个条件的文件才会被处理
+                    dl_handle_ptr handle { dl_load_library(entry) };  // 尝试动态加载这个共享库
                     if (!handle && !silent) {
                         GGML_LOG_ERROR("%s: failed to load %s: %s\n", __func__, path_str(entry.path()).c_str(), dl_error());
                     }
                     if (handle) {
-                        auto score_fn = (ggml_backend_score_t) dl_get_sym(handle.get(), "ggml_backend_score");
+                        auto score_fn = (ggml_backend_score_t) dl_get_sym(handle.get(), "ggml_backend_score");  // 加载成功后, 尝试获取库中的符号ggml_backend_score
                         if (score_fn) {
-                            int s = score_fn();
+                            int s = score_fn();  // 如果找到了评分函数, 就调用它, 得到当前后端的评分s
 #ifndef NDEBUG
                             GGML_LOG_DEBUG("%s: %s score: %d\n", __func__, path_str(entry.path()).c_str(), s);
 #endif
                             if (s > best_score) {
                                 best_score = s;
                                 best_path = entry.path();
-                            }
+                            }  // 如果当前库的得分比之前记录的最高分还高, 就更新best_score和best_path. 
                         } else {
                             if (!silent) {
                                 GGML_LOG_INFO("%s: failed to find ggml_backend_score in %s\n", __func__, path_str(entry.path()).c_str());
