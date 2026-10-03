@@ -289,6 +289,7 @@ struct ggml_backend_registry {
     }
 };
 
+// 返回一个单例的全局后端注册表
 static ggml_backend_registry & get_reg() {
     static ggml_backend_registry reg;
     return reg;
@@ -480,9 +481,9 @@ static fs::path backend_filename_extension() {
 // 在同一种backend的多个动态库版本里面, 选出最合适当前机器的那个并加载. 对每个候选backend调用它提供的ggml_backend_score(), 分数越高, 说明越适合当前的机器. 0表示当前机器不支持这个backend, 最后加载最高分的那个. 
 static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent, const char * user_search_path) {
     // enumerate all the files that match [lib]ggml-name-*.[so|dll] in the search paths
-    const fs::path name_path = fs::u8path(name);
-    const fs::path file_prefix = backend_filename_prefix().native() + name_path.native() + fs::u8path("-").native();
-    const fs::path file_extension = backend_filename_extension();
+    const fs::path name_path = fs::u8path(name);  // 将后端传入的名字, 如"cuda", "metal"转为std::filesystem::path
+    const fs::path file_prefix = backend_filename_prefix().native() + name_path.native() + fs::u8path("-").native();  // 拼接出文件名的前缀, .native()是把path转为平台原生的字符串类型, 方便直接用+拼接
+    const fs::path file_extension = backend_filename_extension();  // 获取文件后缀, windows上是.dll; 其他是.so
 
     std::vector<fs::path> search_paths;
     if (user_search_path == nullptr) {

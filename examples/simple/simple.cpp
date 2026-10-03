@@ -78,7 +78,7 @@ int main(int argc, char ** argv) {  // argc是参数的数量, argv是参数数�
     }
 
     // load dynamic backends
-    // 将GGML支持的所有后端动态加载并注册进来, 如CPU, CUDA, HIP, Metal, Vulkan, OpenCL, SYCL, CANN, BLAS, RPC等等; 后面加载模型的时候才能选择这些后端执行计算
+    // 将GGML支持的所有后端动态加载并注册进来, 如CPU, CUDA, HIP, Metal, Vulkan, OpenCL, SYCL, CANN, BLAS, RPC等等; 后面加载模型的时候才能选择这些后端执行计算. 当编译的时候开启GGML_BACKEND_DL, 后端会以独立共享库的形式存在, 而不是静态链接进主程序. 该函数会将成功加载的后端注册到全局后端注册表, 它是GGML里面的一个单例全局数据结构, 用来集中管理所有已经加载的计算后端. 
 
     ggml_backend_load_all();
 
