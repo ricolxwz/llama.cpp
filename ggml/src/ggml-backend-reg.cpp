@@ -477,6 +477,7 @@ static fs::path backend_filename_extension() {
 #endif
 }
 
+// 在同一种backend的多个动态库版本里面, 选出最合适当前机器的那个并加载. 对每个候选backend调用它提供的ggml_backend_score(), 分数越高, 说明越适合当前的机器. 0表示当前机器不支持这个backend, 最后加载最高分的那个. 
 static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent, const char * user_search_path) {
     // enumerate all the files that match [lib]ggml-name-*.[so|dll] in the search paths
     const fs::path name_path = fs::u8path(name);
@@ -582,6 +583,7 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
     bool silent = false;
 #endif
 
+    // 在同一种backend的多个动态库版本里面, 选出最合适当前机器的那个并加载; silent表示是否静默加载; 它要去磁盘上找动态库, 所以需要一个目录告诉它"去哪里找", 比如说windows下面可能有C:\llama\backends\ggml-cpu.dll; ggml-cuda.dll; ggml-vulkan.dll, 函数会在这个目录里面搜索对应的backends. 注意, 这里是CUDA内部选score最高的版本->加载; CPU内部选score最高的版本->加载...
     ggml_backend_load_best("blas", silent, dir_path);
     ggml_backend_load_best("zendnn", silent, dir_path);
     ggml_backend_load_best("cann", silent, dir_path);
@@ -600,6 +602,6 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
     // check the environment variable GGML_BACKEND_PATH to load an out-of-tree backend
     const char * backend_path = std::getenv("GGML_BACKEND_PATH");
     if (backend_path) {
-        ggml_backend_load(backend_path);
+        ggml_backend_load(backend_path);  // 如果用户设置了这个环境变量, 那么, 额外加载这个指定的动态库
     }
 }

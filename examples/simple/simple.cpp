@@ -11,7 +11,7 @@ static void print_usage(int, char ** argv) {
     printf("\n");
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char ** argv) {  // argc是参数的数量, argv是参数数组
     std::setlocale(LC_NUMERIC, "C");  // setlocale是设置程序的区域设置, 影响日期, 货币, 数字等格式. LC_NUMERIC是区域设置里面的一个类别, 只控制数字的解析与打印, 核心是小数点用什么字符. "C"是经典默认区域, 小数点固定为., 没有本地化格式. 如果用户系统locale是德语/法语/俄语等, 小数点模式是逗号,. 这时程序会出现两种坏情况: * 解析strtod("0.8")的时候, 会把0.8读成0(因为在.处截断); * 打印printf("%f", 0.5)输出0,500000. 
 
     // path to the model gguf file
@@ -30,7 +30,7 @@ int main(int argc, char ** argv) {
         for (; i < argc; i++) {
             if (strcmp(argv[i], "-m") == 0) {
                 if (i + 1 < argc) {
-                    model_path = argv[++i];
+                    model_path = argv[++i];  // 模型路径, 如model.gguf
                 } else {
                     print_usage(argc, argv);
                     return 1;
@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
             } else if (strcmp(argv[i], "-n") == 0) {
                 if (i + 1 < argc) {
                     try {
-                        n_predict = std::stoi(argv[++i]);
+                        n_predict = std::stoi(argv[++i]);  // 生成token的数量, stoi用于将字符串转为整数
                     } catch (...) {
                         print_usage(argc, argv);
                         return 1;
@@ -50,7 +50,7 @@ int main(int argc, char ** argv) {
             } else if (strcmp(argv[i], "-ngl") == 0) {
                 if (i + 1 < argc) {
                     try {
-                        ngl = std::stoi(argv[++i]);
+                        ngl = std::stoi(argv[++i]);  // 使用GPU的层数
                     } catch (...) {
                         print_usage(argc, argv);
                         return 1;
@@ -72,12 +72,13 @@ int main(int argc, char ** argv) {
             prompt = argv[i++];
             for (; i < argc; i++) {
                 prompt += " ";
-                prompt += argv[i];
+                prompt += argv[i];  // prompt
             }
         }
     }
 
     // load dynamic backends
+    // 将GGML支持的所有后端动态加载并注册进来, 如CPU, CUDA, HIP, Metal, Vulkan, OpenCL, SYCL, CANN, BLAS, RPC等等; 后面加载模型的时候才能选择这些后端执行计算
 
     ggml_backend_load_all();
 
