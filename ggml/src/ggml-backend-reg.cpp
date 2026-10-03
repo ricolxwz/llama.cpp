@@ -529,8 +529,8 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
             if (entry.is_regular_file(ec)) {  // 判断是否为普通文件
                 auto filename = entry.path().filename();  // 文件名
                 auto ext = entry.path().extension();  // 扩展名
-                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {  // 文件名以file_prefix开头, 例如libggml-cuda-; 扩展名等于file_extension, 例如.so或者.dll只有满足这两个条件的文件才会被处理
-                    dl_handle_ptr handle { dl_load_library(entry) };  // 尝试动态加载这个共享库
+                if (filename.native().find(file_prefix) == 0 && ext == file_extension) {  // 文件名以file_prefix开头, 例如libggml-cuda-; 扩展名等于file_extension, 例如.so或者.dll只有满足这两个条件的文件才会被处理, 所以像libggml-cuda-12.so这种带后缀的都会被扫描到 
+                    dl_handle_ptr handle { dl_load_library(entry) };  // 尝试动态加载这个共享库. 这是一个带有自定义删除器的智能指针. 它的析构函数里面会调用dlclse, 所以当这句所在的作用域结束的时候(也就是每次for循环迭代结束, 准备处理下一个文件的时候), handle就会自动析构, 对应的动态库会被dlclose掉. 这里只是临时加载用来调用ggml_backend_score()打分, 打分完就立刻卸载. 真正长期加载最优后端的动作, 是在函数的最后: load_backend
                     if (!handle && !silent) {
                         GGML_LOG_ERROR("%s: failed to load %s: %s\n", __func__, path_str(entry.path()).c_str(), dl_error());
                     }
@@ -557,11 +557,12 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
     }
 
     if (best_score == 0) {
+        // 如果最高分为0(说明没有找到任何带评分函数的后端, 或者全部得分为0), 就退而求其次, 尝试加载基础班的后端(不带版本号/额外后缀的那个); 如带评分的后端是libggml-cuda-12.so; 基础后端是libggml-cuda.so
         // try to load the base backend
         for (const auto & search_path : search_paths) {
             fs::path filename = backend_filename_prefix().native() + name_path.native() + backend_filename_extension().native();
             fs::path path = search_path / filename;
-            if (std::error_code ec; fs::exists(path, ec)) {
+            if (std::error_code ec; fs::exists(path, ec)) {  // 如果基础文件存在, 就直接加载它
                 return get_reg().load_backend(path, silent);
             } else {
                 if (ec) {
