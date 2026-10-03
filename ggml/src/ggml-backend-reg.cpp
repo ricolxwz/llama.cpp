@@ -482,24 +482,26 @@ static fs::path backend_filename_extension() {
 static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent, const char * user_search_path) {
     // enumerate all the files that match [lib]ggml-name-*.[so|dll] in the search paths
     const fs::path name_path = fs::u8path(name);  // 将后端传入的名字, 如"cuda", "metal"转为std::filesystem::path
-    const fs::path file_prefix = backend_filename_prefix().native() + name_path.native() + fs::u8path("-").native();  // 拼接出文件名的前缀, .native()是把path转为平台原生的字符串类型, 方便直接用+拼接
+    const fs::path file_prefix = backend_filename_prefix().native() + name_path.native() + fs::u8path("-").native();  // 拼接出文件名的前缀, .native()是把path转为平台原生的字符串类型, 方便直接用+拼接. std::filesystem::path没有二元运算符operator+, 如果写backend_filename_prefix()/name_path, 才会按照路径层级拼接
     const fs::path file_extension = backend_filename_extension();  // 获取文件后缀, windows上是.dll; 其他是.so
 
     std::vector<fs::path> search_paths;
     if (user_search_path == nullptr) {
-#ifdef GGML_BACKEND_DIR
+#ifdef GGML_BACKEND_DIR  // 如果编译的时候定义了这个宏, 那么就直接加入到搜索路径里面
         search_paths.push_back(fs::u8path(GGML_BACKEND_DIR));
 #endif
+        // 默认搜索路径: 可执行文件目录和当前工作目录
         // default search paths: executable directory, current directory
-        search_paths.push_back(get_executable_path());
+        search_paths.push_back(get_executable_path());  // 获取当前可执行文件所在目录的内部辅助函数, 例如返回/home/user/llama.cpp/build/bin/
         std::error_code cwd_ec;
-        const fs::path cwd = fs::current_path(cwd_ec);
+        const fs::path cwd = fs::current_path(cwd_ec);  // 获取当前工作目录, 然后保存到cwd, 如果调用失败, 不会抛出异常, 而是将错误写入cwd_ec, 后续的代码会检查; 该函数接受一个error_code的引用
         if (cwd_ec) {
             GGML_LOG_DEBUG("%s: current_path() failure, error-message: %s\n", __func__, cwd_ec.message().c_str());
         } else {
             search_paths.push_back(cwd);
         }
     } else {
+        // 否则就是用户提供的路径
         search_paths.push_back(fs::u8path(user_search_path));
     }
 
@@ -509,9 +511,9 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
 
     for (const auto & search_path : search_paths) {
         if (!fs::exists(search_path, ec)) {
-            if (ec) {
+            if (ec) {  // 查询文件时失败了, 常见原因有Permission denied, I/O error, 文件系统异常等
                 GGML_LOG_DEBUG("%s: posix_stat(%s) failure, error-message: %s\n", __func__, path_str(search_path).c_str(), ec.message().c_str());
-            } else {
+            } else {  // 路径不存在
                 GGML_LOG_DEBUG("%s: search path %s does not exist\n", __func__, path_str(search_path).c_str());
             }
             continue;
