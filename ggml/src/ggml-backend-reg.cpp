@@ -593,12 +593,12 @@ void ggml_backend_load_all_from_path(const char * dir_path) {
     ggml_backend_load_best("rpc", silent, dir_path);  // 把计算通过网络扔给另一台机器执行
     ggml_backend_load_best("sycl", silent, dir_path);  // 主要给Intel GPU用
     ggml_backend_load_best("vulkan", silent, dir_path);  // 给各类GPU用, 通用GPU图形/计算API, NVIDIA/AMD/Intel都可能支持
-    ggml_backend_load_best("virtgpu", silent, dir_path);
-    ggml_backend_load_best("opencl", silent, dir_path);
-    ggml_backend_load_best("hexagon", silent, dir_path);
-    ggml_backend_load_best("musa", silent, dir_path);
-    ggml_backend_load_best("openvino", silent, dir_path);
-    ggml_backend_load_best("cpu", silent, dir_path);
+    ggml_backend_load_best("virtgpu", silent, dir_path);  // 虚拟GPU/远程GPU接口
+    ggml_backend_load_best("opencl", silent, dir_path);  // 通用GPU计算接口
+    ggml_backend_load_best("hexagon", silent, dir_path);  // 主要给骁龙NPU用
+    ggml_backend_load_best("musa", silent, dir_path);  // 主要给摩尔线程GPU用
+    ggml_backend_load_best("openvino", silent, dir_path);  // 主要给Intel CPU/GPU/NPU用
+    ggml_backend_load_best("cpu", silent, dir_path);  // 最基础的CPU计算后端
     // check the environment variable GGML_BACKEND_PATH to load an out-of-tree backend
     const char * backend_path = std::getenv("GGML_BACKEND_PATH");
     if (backend_path) {
