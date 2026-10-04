@@ -92,6 +92,7 @@
 
 namespace fs = std::filesystem;
 
+// 将文件系统路径fs::path转为保存UTF-i字节的std::string, 同时兼容C++17和C++20
 static std::string path_str(const fs::path & path) {
     try {
 #if defined(__cpp_lib_char8_t)
@@ -112,10 +113,12 @@ struct ggml_backend_reg_entry {
     dl_handle_ptr handle;
 };
 
+// 全局注册表定义
 struct ggml_backend_registry {
-    std::vector<ggml_backend_reg_entry> backends;
-    std::vector<ggml_backend_dev_t> devices;
+    std::vector<ggml_backend_reg_entry> backends;  // 保存所有已经注册的后端
+    std::vector<ggml_backend_dev_t> devices;  // 汇总这些后端提供的设备
 
+    // 后端加入列表, 设备加入列表; 这里初始化的时候调用register_backend说明是编译的时候已经动态链接了, 而不是运行时动态加载
     ggml_backend_registry() {
 #ifdef GGML_USE_CUDA
         register_backend(ggml_backend_cuda_reg());
@@ -183,6 +186,7 @@ struct ggml_backend_registry {
         }
     }
 
+    // 将后端加入到全局后端列表, 再把它提供的设备加入全局设备列表
     void register_backend(ggml_backend_reg_t reg, dl_handle_ptr handle = nullptr) {
         if (!reg) {
             return;
@@ -204,6 +208,7 @@ struct ggml_backend_registry {
         }
     }
 
+    // 将设备加入全局设备列表
     void register_device(ggml_backend_dev_t device) {
         for (auto & dev : devices) {
             if (dev == device) {
@@ -218,7 +223,7 @@ struct ggml_backend_registry {
     }
 
     ggml_backend_reg_t load_backend(const fs::path & path, bool silent) {
-        dl_handle_ptr handle { dl_load_library(path) };
+        dl_handle_ptr handle { dl_load_library(path) };  // 获取动态库句柄
         if (!handle) {
             if (!silent) {
                 GGML_LOG_ERROR("%s: failed to load %s: %s\n", __func__, path_str(path).c_str(), dl_error());
@@ -226,7 +231,7 @@ struct ggml_backend_registry {
             return nullptr;
         }
 
-        auto score_fn = (ggml_backend_score_t) dl_get_sym(handle.get(), "ggml_backend_score");
+        auto score_fn = (ggml_backend_score_t) dl_get_sym(handle.get(), "ggml_backend_score");  // ggml_backend_load_best()中是临时加载, 是为了比较不同的版本, 选出得分最高的库. 这里是第二次加载的句柄, 目的是检查是否支持当前的机器, 如果库提供的评分函数返回0, 就拒绝加载. 为什么不能省掉第二次检查, 因为load_backend()不一定经过load_best()才被调用, 用户可以直接ggml_backend_load(path)指定动态库路径加载, 这种情况下根本没有第一次打分, 因此load_backend()需要自己完成检查. 这里做了一个C风格的类型转换, ggml_backend_score_t是一个函数指针类型, typedef int (*ggml_backend_score_t)(void). 
         if (score_fn && score_fn() == 0) {
             if (!silent) {
                 GGML_LOG_INFO("%s: backend %s is not supported on this system\n", __func__, path_str(path).c_str());
@@ -234,7 +239,7 @@ struct ggml_backend_registry {
             return nullptr;
         }
 
-        auto backend_init_fn = (ggml_backend_init_t) dl_get_sym(handle.get(), "ggml_backend_init");
+        auto backend_init_fn = (ggml_backend_init_t) dl_get_sym(handle.get(), "ggml_backend_init");  // 找到后端的初始化函数
         if (!backend_init_fn) {
             if (!silent) {
                 GGML_LOG_ERROR("%s: failed to find ggml_backend_init in %s\n", __func__, path_str(path).c_str());
@@ -258,7 +263,7 @@ struct ggml_backend_registry {
 
         GGML_LOG_INFO("%s: loaded %s backend from %s\n", __func__, ggml_backend_reg_name(reg), path_str(path).c_str());
 
-        register_backend(reg, std::move(handle));
+        register_backend(reg, std::move(handle));  // 将句柄转移到全局后端注册表中
 
         return reg;
     }
@@ -573,7 +578,7 @@ static ggml_backend_reg_t ggml_backend_load_best(const char * name, bool silent,
         return nullptr;
     }
 
-    return get_reg().load_backend(best_path, silent);
+    return get_reg().load_backend(best_path, silent);  // get_reg()首次调用会构造ggml_backend_registry
 }
 
 void ggml_backend_load_all() {

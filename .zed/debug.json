@@ -1,0 +1,19 @@
+[
+  {
+    "label": "Debug llama-simple (TinyLlama)",
+    "adapter": "CodeLLDB",
+    "request": "launch",
+    "program": "$ZED_WORKTREE_ROOT/build-debug/bin/llama-simple",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "args": [
+      "-m",
+      "$ZED_WORKTREE_ROOT/tinyllama-1.1b-chat-v1.0.Q2_K.gguf",
+      "-n",
+      "32",
+      "-ngl",
+      "0",
+      "<|user|>\n今天杭州的气温是多少？</s>\n<|assistant|>\n"
+    ],
+    "stopOnEntry": true,
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "label": "CMake: Configure Debug",
+    "command": "cmake -S . -B build-debug -DCMAKE_BUILD_TYPE=Debug",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "CMake: Build Debug",
+    "command": "cmake --build build-debug --config Debug -j 8",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  }
+]
