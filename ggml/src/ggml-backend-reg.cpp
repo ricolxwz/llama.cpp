@@ -11,8 +11,8 @@
 #include <vector>
 #include <cctype>
 
-// 其他 .cpp 文件通过 ggml_backend_reg_* 和 ggml_backend_dev_* 等公开 API 访问全局注册表。
-// get_reg() 仅在本文件内可用，每次返回同一个注册表实例的引用。
+// 其他 .cpp 文件通过 ggml_backend_reg_* 和 ggml_backend_dev_* 等公开 API 访问全局注册表.
+// get_reg() 仅在本文件内可用, 每次返回同一个注册表实例的引用.
 
 #ifdef _WIN32
 #    define WIN32_LEAN_AND_MEAN
@@ -322,15 +322,18 @@ static bool striequals(const char * a, const char * b) {
     return *a == *b;
 }
 
+// 返回已注册的后端数量
 size_t ggml_backend_reg_count() {
     return get_reg().backends.size();
 }
 
+// 从全局后端注册表中, 按照索引取出一个已经注册的后端, 返回它的ggml_backend_reg_t句柄. 
 ggml_backend_reg_t ggml_backend_reg_get(size_t index) {
     GGML_ASSERT(index < ggml_backend_reg_count());
     return get_reg().backends[index].reg;
 }
 
+// 根据后端名字查找后端注册表, 返回对应的ggml_backend_reg_t句柄. 如果没有找到, 返回nullptr.
 ggml_backend_reg_t ggml_backend_reg_by_name(const char * name) {
     for (size_t i = 0; i < ggml_backend_reg_count(); i++) {
         ggml_backend_reg_t reg = ggml_backend_reg_get(i);
@@ -341,16 +344,18 @@ ggml_backend_reg_t ggml_backend_reg_by_name(const char * name) {
     return nullptr;
 }
 
-// Device enumeration
+// 返回已注册的设备数量
 size_t ggml_backend_dev_count() {
     return get_reg().devices.size();
 }
 
+// 从全局后端注册表中, 按照索引取出一个已经注册的设备, 返回它的ggml_backend_dev_t句柄.
 ggml_backend_dev_t ggml_backend_dev_get(size_t index) {
     GGML_ASSERT(index < ggml_backend_dev_count());
     return get_reg().devices[index];
 }
 
+// 根据设备名字查找设备注册表, 返回对应的ggml_backend_dev_t句柄. 
 ggml_backend_dev_t ggml_backend_dev_by_name(const char * name) {
     for (size_t i = 0; i < ggml_backend_dev_count(); i++) {
         ggml_backend_dev_t dev = ggml_backend_dev_get(i);
@@ -361,6 +366,7 @@ ggml_backend_dev_t ggml_backend_dev_by_name(const char * name) {
     return nullptr;
 }
 
+// 根据设备类型查找设备注册表, 返回对应的ggml_backend_dev_t句柄. 设备类型见 enum ggml_backend_dev_type, 例如GGML_BACKEND_DEVICE_TYPE_CPU, GGML_BACKEND_DEVICE_TYPE_GPU等.
 ggml_backend_dev_t ggml_backend_dev_by_type(enum ggml_backend_dev_type type) {
     for (size_t i = 0; i < ggml_backend_dev_count(); i++) {
         ggml_backend_dev_t dev = ggml_backend_dev_get(i);

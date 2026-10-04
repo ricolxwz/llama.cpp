@@ -132,15 +132,15 @@ extern "C" {
     //
 
     enum ggml_backend_dev_type {
-        // CPU device using system memory
+        // 使用系统内存的CPU设备
         GGML_BACKEND_DEVICE_TYPE_CPU,
-        // GPU device using dedicated memory
+        // 使用独立显存的GPU设备
         GGML_BACKEND_DEVICE_TYPE_GPU,
-        // integrated GPU device using host memory
+        // 使用集成显存的GPU设备
         GGML_BACKEND_DEVICE_TYPE_IGPU,
-        // accelerator devices intended to be used together with the CPU backend (e.g. BLAS or AMX)
+        // 配合CPU后端使用的加速设备, 例如BLAS, AMX
         GGML_BACKEND_DEVICE_TYPE_ACCEL,
-        // "meta" device wrapping multiple other devices for tensor parallelism
+        // 将多个设备组合在一起的元设备, 例如用于张量并行的多个GPU
         GGML_BACKEND_DEVICE_TYPE_META,
     };
 
