@@ -11,6 +11,9 @@
 #include <vector>
 #include <cctype>
 
+// 其他 .cpp 文件通过 ggml_backend_reg_* 和 ggml_backend_dev_* 等公开 API 访问全局注册表。
+// get_reg() 仅在本文件内可用，每次返回同一个注册表实例的引用。
+
 #ifdef _WIN32
 #    define WIN32_LEAN_AND_MEAN
 #    ifndef NOMINMAX
