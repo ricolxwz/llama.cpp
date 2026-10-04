@@ -312,22 +312,27 @@ extern "C" {
     };
 
     struct llama_model_params {
-        // NULL-terminated list of devices to use for offloading (if NULL, all available devices are used)
+        // 指定哪些设备可以用于模型加载, 设备句柄
         ggml_backend_dev_t * devices;
 
-        // NULL-terminated list of buffer types to use for tensors that match a pattern
-        const struct llama_model_tensor_buft_override * tensor_buft_overrides;
+        const struct llama_model_tensor_buft_override * tensor_buft_overrides;  // 用来按张量名称指定权重的存储位置, 覆盖默认分配策略
 
-        int32_t n_gpu_layers; // number of layers to store in VRAM, a negative value means all layers
-        enum llama_split_mode split_mode; // how to split the model across multiple GPUs
-        enum llama_load_mode  load_mode;  // how to load the model
+        int32_t n_gpu_layers;  // 控制放到GPU显存中的模型层数
+        enum llama_split_mode split_mode; // 模型如何在多个GPU之间拆分, 如LLAMA_SPLIT_MODE_NONE, LLAMA_SPLIT_MODE_LAYER, LLAMA_SPLIT_MODE_ROW, LLAMA_SPLIT_MODE_TENSOR; 其中, NONE表示单GPU, LAYER表示按层拆分, ROW表示按行拆分, TENSOR表示按张量拆分
+        enum llama_load_mode  load_mode;  // 控制如何读取模型文件, 如LLAMA_LOAD_MODE_AUTO, LLAMA_LOAD_MODE_NONE, LLAMA_LOAD_MODE_MMAP, LLAMA_LOAD_MODE_MLOCK, LLAMA_LOAD_MODE_MMAP_MLOCK, LLAMA_LOAD_MODE_DIRECT_IO; 
+        /*
+         * LLAMA_LOAD_MODE_MMAP: 将文件内容映射到进程的虚拟地址空间, 让程序可以像访问内存一样访问文件数据. 由OS通过Page Fault机制按需加载数据到内存, 适合大模型, 但可能会有Page Fault开销.
+         * LLAMA_LOAD_MODE_MLOCK: 将文件内容锁定在内存中, 防止被交换到磁盘. 适合小模型, 可以避免Page Fault开销, 但会占用更多内存.
+         * LLAMA_LOAD_MODE_MMAP_MLOCK: 先mmap再mlock, 适合中等模型, 可以按需加载数据到内存, 并锁定在内存中, 避免被交换到磁盘.
+         * LLAMA_LOAD_MODE_DIRECT_IO: 直接I/O模式, 适合大模型, 可以绕过操作系统的缓存机制, 直接从磁盘读取数据到用户空间, 但需要对齐和缓冲区大小的限制.
+         */
 
-        enum llama_lazy_mode lazy_mode; // on-demand reading of tensors marked by the arch
+        enum llama_lazy_mode lazy_mode;  // 控制部分张量是否按需读取, 往往和LLAMA_LOAD_MODE_MMAP一起使用. 其中, OFF表示不按需读取, AUTO表示对大于4GB的张量按需读取, ON表示对标记的张量按需读取. 表示什么时候将模型的数据真正搬进内存. 
 
-        // the GPU that is used for the entire model when split_mode is LLAMA_SPLIT_MODE_NONE
+        // LLAMA_SPLIT_MODE_NONE的时候使用哪一个GPU
         int32_t main_gpu;
 
-        // proportion of the model (layers or rows) to offload to each GPU, size: llama_max_devices()
+        // 各GPU分担模型的相对比例
         const float * tensor_split;
 
         // Called with a progress value between 0.0 and 1.0. Pass NULL to disable.

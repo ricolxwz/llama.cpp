@@ -377,7 +377,7 @@ ggml_backend_dev_t ggml_backend_dev_by_type(enum ggml_backend_dev_type type) {
     return nullptr;
 }
 
-// Convenience functions
+// ggml_backend_dev_t代表设备, ggml_backend_t代表在该设备上创建的计算执行实例. 流程为: 先通过ggml_backend_dev_by_name()或者ggml_backend_dev_by_type()获取设备句柄, 然后调用ggml_backend_dev_init()创建计算执行实例. 也可以直接通过ggml_backend_init_by_name()或者ggml_backend_init_by_type()一步到位创建计算执行实例.
 ggml_backend_t ggml_backend_init_by_name(const char * name, const char * params) {
     ggml_backend_dev_t dev = ggml_backend_dev_by_name(name);
     if (!dev) {
