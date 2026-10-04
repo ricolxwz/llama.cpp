@@ -338,6 +338,7 @@ extern "C" {
         // Called with a progress value between 0.0 and 1.0. Pass NULL to disable.
         // If the provided progress_callback returns true, model loading continues.
         // If it returns false, model loading is immediately aborted.
+        // 这是一个模型加载进度回调的函数指针, 用来让你在函数加载过程中收到进度通知, 也可以取消加载. 
         llama_progress_callback progress_callback;
 
         // context pointer passed to the progress callback
