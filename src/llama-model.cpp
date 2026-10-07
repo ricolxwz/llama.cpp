@@ -2786,19 +2786,19 @@ ggml_cgraph * llama_model::build_graph(const llm_graph_params & params) const {
 
 llama_model_params llama_model_default_params() {
     llama_model_params result = {
-        /*.devices                     =*/ nullptr,
-        /*.tensor_buft_overrides       =*/ nullptr,
-        /*.n_gpu_layers                =*/ -1,
-        /*.split_mode                  =*/ LLAMA_SPLIT_MODE_LAYER,
-        /*.load_mode                   =*/ LLAMA_LOAD_MODE_AUTO,
-        /*.lazy_mode                   =*/ LLAMA_LAZY_MODE_AUTO,
-        /*.main_gpu                    =*/ 0,
-        /*.tensor_split                =*/ nullptr,
-        /*.progress_callback           =*/ nullptr,
-        /*.progress_callback_user_data =*/ nullptr,
-        /*.kv_overrides                =*/ nullptr,
-        /*.vocab_only                  =*/ false,
-        /*.check_tensors               =*/ false,
+        /*.devices                     =*/ nullptr,  // 自动选择可用设备
+        /*.tensor_buft_overrides       =*/ nullptr,  // 不对特定张量指定buffer type
+        /*.n_gpu_layers                =*/ -1,  // 加载到所有可用的GPU上
+        /*.split_mode                  =*/ LLAMA_SPLIT_MODE_LAYER,  // 多GPU的时候, 模型按照层分配, 例如某一些层放到GPU0, 另一些放到GPU1
+        /*.load_mode                   =*/ LLAMA_LOAD_MODE_AUTO,  // 自动选择加载方式, 当前加载器会先尝试使用mmap, 再结合设备能力等条件调整
+        /*.lazy_mode                   =*/ LLAMA_LAZY_MODE_AUTO,  // 将模型标记为可懒加载, 且大于4GB的张量启用按需读取, 需要mmap
+        /*.main_gpu                    =*/ 0,  // 单GPU模式下, 设备选择列表中的第0个GPU
+        /*.tensor_split                =*/ nullptr,  // 不手动指定各GPU的分配比例, 由实现计算默认分配
+        /*.progress_callback           =*/ nullptr,  // 不提供自定义加载进度回调
+        /*.progress_callback_user_data =*/ nullptr, // 传给回调的用户上下文
+        /*.kv_overrides                =*/ nullptr,  // 不覆盖GGUF模型元数据, 这里的KV是元数据的key-value, 不是推理过程中的KV cache
+        /*.vocab_only                  =*/ false,  // 正常加载模型, 不局限于词表; 设置为true的时候是只加载词表, 不加载权重, 只适合用作分词的用途
+        /*.check_tensors               =*/ false,  // 不执行额外的张量数据校验; 设置为true会增加加载检查和开销
         /*.use_extra_bufts             =*/ true,
         /*.no_host                     =*/ false,
         /*.no_alloc                    =*/ false,
